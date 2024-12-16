@@ -4,6 +4,8 @@ import NotFound from "./components/views/NotFound.jsx";
 import Register from "./components/views/Register.jsx";
 import Catalog from "./components/views/Catalog.jsx";
 
+
+
 function App() {
   return (
     <Router>
