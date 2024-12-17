@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { TextField, Button} from "@mui/material";
-// import "../../";
 import { loginUser, signinGoogle } from "../firebase/firebase-auth.js";
 import { getAuth } from "firebase/auth";
 import { app } from "../../configuracionFirebase.js";
@@ -25,22 +24,22 @@ function Login  () {
 
   const formLogin = (e) => {
     e.preventDefault()
-    if(!password.trim()){ console.log('la contraseña está vacía')
-    return
+    if(!password.trim()){ 
+      console.log('la contraseña está vacía')
+      return
     }
-    if(!email.trim()){ console.log('el email está vacío')
-    return
+    if(!email.trim()){ 
+      console.log('el email está vacío')
+      return
     }
-
     
     loginUser(auth, email, password);
-
-    console.log('procesando datos... ' + email + password);
 
     e.target.reset()
     setEmail('')
     setPassword('')
   };
+
   const toRegister = () => {
     window.location.href = "/register";
   };
@@ -74,7 +73,7 @@ function Login  () {
             }}
           >
             <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-              {/* <LockOutlinedIcon /> */}
+              <LockOutlinedIcon />
             </Avatar>
             <Typography component="h1" variant="h5">
               Ingresar
@@ -113,8 +112,13 @@ function Login  () {
                 Ingresar
               </Button>
               <Button   
-              fullWidth
-              variant="contained" color="secondary" size="large" onClick={() => signinGoogle(auth)}>Google</Button>
+                fullWidth
+                variant="contained" 
+                color="secondary" 
+                size="large" 
+                onClick={() => signinGoogle(auth)}>
+                  Google
+              </Button>
               <Grid container>
                 <Grid item xs>
                   <Link href="#" variant="body2">
