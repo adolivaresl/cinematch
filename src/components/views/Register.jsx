@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TextField, Button} from "@mui/material";
 import "../../style.css";
 import { registerUser } from "../firebase/firebase-auth.js";
@@ -19,8 +20,8 @@ function Register  () {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const theme = createTheme();
+  const navigate = useNavigate(); // Hook para redirecciones
 
   const formRegistration = (e) => {
     e.preventDefault()
@@ -36,9 +37,9 @@ function Register  () {
     }
 
     const auth = getAuth();
-    registerUser(auth, email, password, name);
+    registerUser(auth, email, password, name, navigate);
 
-    console.log('procesando datos... ' + email + password + name);
+    // console.log('procesando datos... ' + email + password + name);
 
     e.target.reset()
     setEmail('')
@@ -46,7 +47,8 @@ function Register  () {
     setPassword('')
   };
   const toLogin = () => {
-    window.location.href = "/login";
+    navigate('/login');
+    // window.location.href = "/login";
   };
 
   return (

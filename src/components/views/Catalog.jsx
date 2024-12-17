@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 import axios from 'axios';
 import { userOut } from "../firebase/firebase-auth";
 import {
@@ -36,8 +37,11 @@ const Catalog = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
+  const navigate = useNavigate(); // Hook para redirecciones
+
   const logout = () => {
     userOut();
+    navigate('/login');
   };
 
   // Obtener géneros

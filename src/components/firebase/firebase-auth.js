@@ -1,15 +1,16 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, getAuth,  signOut, updateProfile } from "firebase/auth";
 
-export const userOut = () => {
+export const userOut = (navigate) => {
   const auth = getAuth();
 signOut(auth).then(() => {
   console.log('Te deslogueaste')
-  window.location.href = "/";
+  navigate('/login');
 }).catch((error) => {
-  // An error happened.
+  console.error(error);
 });
 }
-export const registerUser = (auth, email, password, name) => {
+
+export const registerUser = (auth, email, password, name, navigate) => {
 createUserWithEmailAndPassword(auth, email, password)
   .then((userCredential) => {
     // Signed in
@@ -25,7 +26,7 @@ createUserWithEmailAndPassword(auth, email, password)
       });
     }
     userOut();
-    window.location.href = '/login';
+    navigate('/login');
   })
   .catch((error) => {
     const errorCode = error.code;
@@ -35,11 +36,12 @@ createUserWithEmailAndPassword(auth, email, password)
   });
 }
 
-export const loginUser = (auth, email, password) => {
+export const loginUser = (auth, email, password, navigate) => {
     signInWithEmailAndPassword(auth, email, password)
   .then((userCredential) => {
     //const user = userCredential.user;
-    window.location.href = '/catalog';
+    // window.location.href = '/catalog';
+    navigate('/catalog');
   })
   .catch((error) => {
     const errorCode = error.code;
@@ -50,19 +52,20 @@ export const loginUser = (auth, email, password) => {
 
 
 
-export const signinGoogle = (auth) => {
+export const signinGoogle = (auth, navigate) => {
   console.log(3,  'escucho el click')
   const provider = new GoogleAuthProvider();
   signInWithPopup(auth, provider)
   .then(result => {
-    console.log(4,  result)
+    // console.log(4,  result)
     // This gives you a Google Access Token. You can use it to access the Google API.
     const credential = GoogleAuthProvider.credentialFromResult(result);
     const token = credential.accessToken;
     // The signed-in user info.
     const user = result.user;
     console.log(5, credential, token, user)
-      window.location.href = '/catalog';
+    navigate('/catalog');
+      // window.location.href = '/catalog';
   }).catch((error) => {
     // Handle Errors here.
     const errorMessage = error.message;
