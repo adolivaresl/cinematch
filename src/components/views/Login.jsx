@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TextField, Button} from "@mui/material";
 import { loginUser, signinGoogle } from "../firebase/firebase-auth.js";
 import { getAuth } from "firebase/auth";
@@ -21,19 +22,20 @@ function Login  () {
   const [password, setPassword] = useState("");
   const auth = getAuth(app);
   const theme = createTheme();
+  const navigate = useNavigate();
 
   const formLogin = (e) => {
     e.preventDefault()
     if(!password.trim()){ 
       console.log('la contraseña está vacía')
-      return
+      return;
     }
     if(!email.trim()){ 
       console.log('el email está vacío')
-      return
+      return;
     }
     
-    loginUser(auth, email, password);
+    loginUser(auth, email, password, navigate);
 
     e.target.reset()
     setEmail('')
@@ -41,7 +43,8 @@ function Login  () {
   };
 
   const toRegister = () => {
-    window.location.href = "/register";
+    navigate('/register');
+    // window.location.href = "/register";
   };
 
   return (
@@ -116,7 +119,7 @@ function Login  () {
                 variant="contained" 
                 color="secondary" 
                 size="large" 
-                onClick={() => signinGoogle(auth)}>
+                onClick={() => signinGoogle(auth, navigate)}>
                   Google
               </Button>
               <Grid container>
