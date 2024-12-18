@@ -23,7 +23,7 @@ function App() {
          {/* Ruta por defecto */}
          <Route path="/" element={<Navigate to="/login" />} />
          {/* Redirección para rutas no encontradas */}
-        <Route path="*" element={<Navigate to="/notfound" />} />
+        <Route path="*" element={<Navigate to="/NotFound" />} />
       </Routes>
     </Router>
   );
