@@ -14,6 +14,7 @@ import {
   FormControl,
   Grid,
   MenuItem,
+  Modal,
   Select,
   Typography,
 } from '@mui/material';
@@ -22,12 +23,26 @@ import "../../style.css";
 
 const TMDB_BEARER_TOKEN = process.env.REACT_APP_TMDB_BEARER_TOKEN;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+const YOUTUBE_API_KEY = process.env.REACT_APP_YOUTUBE_API_KEY;
 
 const genreFilters = {
   adultos: [18, 27, 53, 80, 10752, 9648], // Drama, Terror, Suspenso, Crimen, Bélico, Misterio
   adolescentes: [28, 12, 878, 14, 16], // Acción, Aventura, Ciencia ficción, Fantasía, Animación
   infancias: [16, 10751, 35], // Animación, Familia, Comedia
   "toda-la-familia": [10751, 35, 16, 14], // Familia, Comedia, Animación, Fantasía
+};
+
+const modalStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '80%',
+  maxWidth: '800px',
+  bgcolor: 'background.paper',
+  boxShadow: 24,
+  p: 4,
+  borderRadius: '8px',
 };
 
 const Catalog = () => {
@@ -40,6 +55,10 @@ const Catalog = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [expandedMovieId, setExpandedMovieId] = useState(null);
+  // const [selectedMovie, setSelectedMovie] = useState(null); // Película seleccionada para el modal
+  const [trailerKey, setTrailerKey] = useState(null); // Clave del trailer para YouTube
+  const [openModal, setOpenModal] = useState(false); // Controla la visibilidad del modal
+
 
   const navigate = useNavigate(); // Hook para redirecciones
 
@@ -104,6 +123,72 @@ const Catalog = () => {
     }
   };
 
+  const fetchTrailerFromTMDb = async (movieId) => {
+    try {
+      const response = await axios.get(`${TMDB_BASE_URL}/movie/${movieId}/videos`, {
+        headers: {
+          Authorization: `Bearer ${TMDB_BEARER_TOKEN}`,
+        },
+        params: {
+          language: 'es-ES',
+        },
+      });
+  
+      // Buscar diferentes tipos de videos en orden de prioridad
+      const videoTypes = ['Trailer', 'Teaser', 'Clip', 'Featurette'];
+      const video = response.data.results.find(
+        (video) => video.site === 'YouTube' && videoTypes.includes(video.type)
+      );
+  
+      return video ? video.key : null; // Devuelve la clave del video o null si no hay videos
+    } catch (err) {
+      console.error('Error fetching trailer from TMDb:', err);
+      return null; // Si falla, devuelve null
+    }
+  };
+
+  const fetchTrailerFromYouTube = async (movieTitle) => {
+    try {
+      const response = await axios.get(`https://www.googleapis.com/youtube/v3/search`, {
+        params: {
+          part: 'snippet',
+          q: `${movieTitle} trailer`,
+          type: 'video',
+          maxResults: 1,
+          key: YOUTUBE_API_KEY,  // Usa la clave de API correcta aquí
+        },
+      });
+  
+      if (response.data.items.length > 0) {
+        const videoId = response.data.items[0].id.videoId;
+        setTrailerKey(videoId);  // Actualizamos el trailerKey
+      } else {
+        console.log('No se encontró el tráiler en YouTube.');
+      }
+    } catch (error) {
+      console.error('Error fetching trailer from YouTube:', error);
+    }
+  };
+  
+  
+  const fetchTrailer = async (movie) => {
+    let trailerKey = await fetchTrailerFromTMDb(movie.id);
+  
+    if (!trailerKey) {
+      console.log(`No se encontró tráiler en TMDb para "${movie.title}". Buscando en YouTube...`);
+      trailerKey = await fetchTrailerFromYouTube(movie.title);
+    }
+  
+    if (trailerKey) {
+      console.log(`Tráiler encontrado para "${movie.title}": ${trailerKey}`);
+    } else {
+      console.log(`No se encontró ningún tráiler para "${movie.title}".`);
+    }
+  
+    setTrailerKey(trailerKey);  // Asegurémonos de que el trailerKey se actualice en el estado
+  };
+  
+  
   useEffect(() => {
     fetchGenres();
     fetchMovies(page);
@@ -125,6 +210,7 @@ const Catalog = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [hasMore, loading]);
 
+
   // Filtrar películas según el filtro seleccionado
   useEffect(() => {
     if (filter && genreFilters[filter]) {
@@ -139,6 +225,14 @@ const Catalog = () => {
     setFilter(event.target.value);
   };
 
+  const handleCardClick = (movieTitle) => {
+    setOpenModal(true);  // Abre el modal
+    setTrailerKey(null);  // Resetea el trailerKey antes de buscar
+    // Intentar buscar el tráiler en YouTube
+    fetchTrailerFromYouTube(movieTitle);
+  };
+
+ 
   const getGenreNames = (genreIds) => {
     return genreIds
       .map((id) => {
@@ -184,7 +278,7 @@ const Catalog = () => {
       </Container>
     );
   }
-
+  
   return (
     <Container className="catalogBody" style={{ marginTop: '20px' }}>
       <Box className="header">
@@ -211,6 +305,7 @@ const Catalog = () => {
       <Grid container spacing={4}>
         {movies.map((movie) => (
           <Grid item key={movie.id} xs={12} sm={6} md={4} lg={3}>
+            <Button onClick={() => handleCardClick(movie.title)}> ver trailer</Button>
             <Card>
               <CardMedia
                 component="img"
@@ -222,8 +317,6 @@ const Catalog = () => {
                 <Typography variant="h6" component="h2">
                   {movie.title}
                 </Typography>
-
-
                 <Typography variant="body2" color="text.secondary">
                   {expandedMovieId === movie.id ? movie.overview : truncateText(movie.overview)}
                 </Typography>
@@ -234,8 +327,6 @@ const Catalog = () => {
                 >
                   {expandedMovieId === movie.id ? 'Mostrar menos' : 'Mostrar más'}
                 </Button>
-
-
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="body2" color="text.secondary">
                   Géneros: {getGenreNames(movie.genre_ids)}
@@ -253,6 +344,31 @@ const Catalog = () => {
           <CircularProgress />
         </Container>
       )}
+      {/* Modal para el tráiler */}
+      <Modal
+        open={openModal}
+        onClose={() => setOpenModal(false)}  // Cierra el modal al hacer clic fuera
+        aria-labelledby="trailer-modal-title"
+        aria-describedby="trailer-modal-description"
+      >
+        <Box sx={modalStyle}>
+          {trailerKey ? (
+            <iframe
+              width="100%"
+              height="400"
+              src={`https://www.youtube.com/embed/${trailerKey}`}
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          ) : (
+            <Typography variant="h6">
+              Cargando tráiler...
+            </Typography>
+          )}
+        </Box>
+      </Modal>
     </Container>
   );
 };

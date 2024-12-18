@@ -14,7 +14,7 @@ export const registerUser = (auth, email, password, name, navigate) => {
 createUserWithEmailAndPassword(auth, email, password)
   .then((userCredential) => {
     // Signed in
-    const user = userCredential.user;
+    // const user = userCredential.user;
     //localStorage.setItem('name', JSON.stringify(name))
     if(auth.currentUser.displayName == null){
       updateProfile(auth.currentUser, {
