@@ -3,19 +3,22 @@ import { useNavigate } from 'react-router-dom'; // Importa useNavigate
 import axios from 'axios';
 import { userOut } from "../firebase/firebase-auth";
 import {
+  Box,
   Button,
   Card,
   CardMedia,
   CardContent,
-  FormControl,
-  Typography,
-  Grid,
   Container,
   CircularProgress,
+  Divider,
+  FormControl,
+  Grid,
   MenuItem,
+  Select,
+  Typography,
 } from '@mui/material';
-import Select from '@mui/material/Select';
 import StarIcon from '@mui/icons-material/Star';
+import "../../style.css";
 
 const TMDB_BEARER_TOKEN = process.env.REACT_APP_TMDB_BEARER_TOKEN;
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
@@ -36,6 +39,7 @@ const Catalog = () => {
   const [filter, setFilter] = useState("toda-la-familia");
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [expandedMovieId, setExpandedMovieId] = useState(null);
 
   const navigate = useNavigate(); // Hook para redirecciones
 
@@ -152,6 +156,17 @@ const Catalog = () => {
     ));
   };
 
+  const handleShowMore = (movieId) => {
+    setExpandedMovieId(expandedMovieId === movieId ? null : movieId); // Alternar entre mostrar y ocultar
+  };
+
+  const truncateText = (text, length = 100) => {
+    if (text.length > length) {
+      return text.substring(0, length) + '...';
+    }
+    return text;
+  };
+
   if (loading && movies.length === 0) {
     return (
       <Container style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
@@ -171,10 +186,11 @@ const Catalog = () => {
   }
 
   return (
-    <Container style={{ marginTop: '20px' }}>
+    <Container className="catalogBody" style={{ marginTop: '20px' }}>
+      <Box className="header">
       <Typography variant="h4" component="h1" gutterBottom>
-        Catálogo de Películas Populares
-      </Typography>
+        Catálogo de Películas
+      </Typography>  
       <Button
         onClick={logout}
         variant="contained"
@@ -183,6 +199,7 @@ const Catalog = () => {
       >
         Salir
       </Button>
+      </Box>  
       <FormControl style={{ marginBottom: '20px', minWidth: 200 }}>
         <Select value={filter} onChange={handleFilterChange} displayEmpty>
           <MenuItem value="toda-la-familia">Toda la familia</MenuItem>
@@ -205,9 +222,21 @@ const Catalog = () => {
                 <Typography variant="h6" component="h2">
                   {movie.title}
                 </Typography>
+
+
                 <Typography variant="body2" color="text.secondary">
-                  {movie.overview}
+                  {expandedMovieId === movie.id ? movie.overview : truncateText(movie.overview)}
                 </Typography>
+                <Button
+                  onClick={() => handleShowMore(movie.id)}
+                  size="small"
+                  color="primary"
+                >
+                  {expandedMovieId === movie.id ? 'Mostrar menos' : 'Mostrar más'}
+                </Button>
+
+
+                <Divider sx={{ my: 2 }} />
                 <Typography variant="body2" color="text.secondary">
                   Géneros: {getGenreNames(movie.genre_ids)}
                 </Typography>

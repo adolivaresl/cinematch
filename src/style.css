@@ -16,6 +16,10 @@ body {
     display:flex;
     flex-wrap: wrap;
   }
+
+  .catalogBody{
+    padding: 25px;
+  }
   
   .cardPost{
     margin: 10px;
@@ -23,4 +27,16 @@ body {
   
   .cardActions{
     align-self:flex-end;
+  }
+
+  .header{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .header button{
+    background-color: transparent;
+    border: 2px solid #9C27B0;
+    color: #9C27B0;
   }
